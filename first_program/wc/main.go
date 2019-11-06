@@ -19,6 +19,7 @@ func count(r io.Reader, countWhat string) int {
 	// Scan given reader by words
 	scanner := bufio.NewScanner(r)
 
+	// Determine what to count
 	switch countWhat {
 	case "words":
 		scanner.Split(bufio.ScanWords)
