@@ -20,6 +20,28 @@ func TestAdd(t *testing.T) {
 	}
 }
 
+// TestComplete tests the Complete method of the List type
+func TestComplete(t *testing.T) {
+	l := todo.List{}
+
+	taskName := "New Task"
+	l.Add(taskName)
+
+	if l[0].Task != taskName {
+		t.Errorf("Add(%q) = %q; Expected %q", taskName, l[0].Task, taskName)
+	}
+
+	if l[0].Done {
+		t.Errorf("New task should not be completed.")
+	}
+
+	l.Complete(1)
+
+	if !l[0].Done {
+		t.Errorf("New task should be completed.")
+	}
+}
+
 // TestSaveGet tests the Save and Get methods of the List type
 func TestSaveGet(t *testing.T) {
 	l1 := todo.List{}
