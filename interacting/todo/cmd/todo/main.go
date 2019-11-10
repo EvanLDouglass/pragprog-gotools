@@ -1,21 +1,24 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	"pragprog.com/gocmd/interacting/todo"
 )
 
-// TODO: make this flexible
-const todoFileName = ".todo.json"
+// Default filename
+var todoFileName = ".todo.json"
 
 func main() {
 	// Customize help message
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(),
-			"%s tool. Developed for The Pragmatic Bookshelp\n", os.Args[0])
+			"%s tool. Developed for The Pragmatic Bookshelf\n", os.Args[0])
 		fmt.Fprintf(flag.CommandLine.Output(),
 			"Copyright 2020\n")
 		fmt.Fprintf(flag.CommandLine.Output(),
@@ -24,10 +27,15 @@ func main() {
 	}
 
 	// Get cmd line flags
-	task := flag.String("task", "", "Task to be included in the todo list")
+	add := flag.Bool("add", false, "Add task to the todo list")
 	list := flag.Bool("list", false, "List all tasks")
 	complete := flag.Int("complete", 0, "Item to mark as complete")
 	flag.Parse()
+
+	// Look for env variable for filename
+	if os.Getenv("TODO_FILENAME") != "" {
+		todoFileName = os.Getenv("TODO_FILENAME")
+	}
 
 	// Generate a list to use
 	l := &todo.List{}
@@ -51,24 +59,46 @@ func main() {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
-	case *task != "":
+	case *add:
 		// Add a new task to the list
-		l.Add(*task)
+		task, err := getTask(os.Stdin, flag.Args()...)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		l.Add(task)
+
 		// Save the new list
 		if err := l.Save(todoFileName); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
 	case *list:
-		// List the items not yet completed
-		for _, item := range *l {
-			if !item.Done {
-				fmt.Println(item.Task)
-			}
-		}
+		// List items
+		fmt.Print(l)
 	default:
 		// Invalid flag
 		fmt.Fprintln(os.Stderr, "Invalid option")
 		os.Exit(1)
 	}
+}
+
+// getTask function decides where to get the description for a new task: from
+// arguments or STDIN
+func getTask(r io.Reader, args ...string) (string, error) {
+	if len(args) > 0 {
+		return strings.Join(args, " "), nil
+	}
+
+	s := bufio.NewScanner(r)
+	s.Scan()
+	if err := s.Err(); err != nil {
+		return "", err
+	}
+
+	if len(s.Text()) == 0 {
+		return "", fmt.Errorf("Task cannot be blank")
+	}
+
+	return s.Text(), nil
 }

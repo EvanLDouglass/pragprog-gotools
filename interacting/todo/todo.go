@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -73,4 +74,22 @@ func (l *List) Get(filename string) error {
 	}
 	// unpack JSON to l, return the error from Unmarshal
 	return json.Unmarshal(file, l)
+}
+
+// String prints out a formatted list. Implements the fmt.Stringer interface.
+func (l *List) String() string {
+	var formatted strings.Builder
+
+	for k, t := range *l {
+		// add padding
+		prefix := "  "
+		if t.Done {
+			// include X in padding for finished tasks
+			prefix = "X "
+		}
+		// write prefix, task number and task to formatted
+		formatted.WriteString(fmt.Sprintf("%s%d: %s\n", prefix, k+1, t.Task))
+	}
+
+	return formatted.String()
 }
