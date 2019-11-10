@@ -16,7 +16,8 @@ func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(),
 			"%s tool. Developed for The Pragmatic Bookshelp\n", os.Args[0])
-		fmt.Fprintf(flag.CommandLine.Output(), "Copyright 2020\n")
+		fmt.Fprintf(flag.CommandLine.Output(),
+			"Copyright 2020\n")
 		fmt.Fprintf(flag.CommandLine.Output(),
 			"Usage information (only supports one option per call):\n")
 		flag.PrintDefaults()
